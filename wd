@@ -1,0 +1,47 @@
+function {
+    emulate -LR zsh
+    setopt err_return
+    setopt pipe_fail
+
+    local -A wd_points
+
+    local config_dir=${XDG_CONFIG_HOME:-~/.config}/wdx
+    local config_file=$config_dir/points
+    local config_file_backup=$config_dir/points.bak
+
+    function wd_load_points {
+        wd_points=()
+        if [[ -f $config_file ]]; then
+            local line
+            while read -r line; do
+                local splits=(${(s:|:)line})
+                local name=${splits[1]}
+                local target=${(j:|:)splits[2,-1]}
+                wd_points[$name]=$target
+            done < $config_file
+        fi
+    }
+
+    function wd_save_points {
+        # Inspired by https://unix.stackexchange.com/a/52079/176805
+        local combined=()
+        for key val in "${(@kv)wd_points}"; do
+            combined+=(${val}$'\n'${key})
+        done
+        local keys=("${${(@o)combined}#*$'\n'}")
+        mkdir -p $config_dir
+        if [[ -f $config-file ]]; then
+            cp $config_file $config_file_backup
+        fi
+        for key in $keys; do
+            echo "$key|${wd_points[$key]}"
+        done > $config_file
+    }
+
+    wd_load_points
+
+    wd_points[foo]=bar
+
+    wd_save_points
+
+}
