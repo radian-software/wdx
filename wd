@@ -1,47 +1,267 @@
+#!/usr/bin/env zsh
+
 function {
     emulate -LR zsh
     setopt err_return
     setopt pipe_fail
 
+    # Hash of all defined warp points.
     local -A wd_points
 
     local config_dir=${XDG_CONFIG_HOME:-~/.config}/wdx
     local config_file=$config_dir/points
     local config_file_backup=$config_dir/points.bak
 
-    function wd_load_points {
+    local here=$1:A:h
+    shift
+
+    local commands=(go show set rm version help)
+
+    local -A arg_counts=(
+        go 1
+        show 1
+        set 2
+        rm 1
+        version 0
+        help 1
+    )
+
+    local -A usage_messages=(
+        go "[<point>]"
+        show "[<point>]"
+        set "[[<point>] <target>]"
+        rm "[<point>]"
+        version ""
+        help "[<command>]"
+    )
+
+    function wd__quote_key {
+        echo -E ${${${${${${1//'('/'\('}//')'/'\)'}//'['/'\['}//']'/'\]'}//'{'/'\{'}//'}'/'\}'}
+    }
+
+    function wd__point {
+        echo -E "$wd_points[(e)$1]"
+    }
+
+    function wd__has_point {
+        [[ -v "wd_points[(e)$(wd__quote_key $1)]" ]]
+    }
+
+    function wd__set_point {
+        typeset -g "wd_points[(e)$(wd__quote_key $1)]=$2"
+    }
+
+    function wd__remove_point {
+        unset "wd_points[(e)$(wd__quote_key $1)]"
+    }
+
+    function wd__load_points {
         wd_points=()
         if [[ -f $config_file ]]; then
+            # read performs wordsplitting unless we disable it.
+            local IFS=
             local line
+            # This assumes that point names are not allowed to contain
+            # pipe characters, but target paths can.
             while read -r line; do
                 local splits=(${(s:|:)line})
                 local name=${splits[1]}
                 local target=${(j:|:)splits[2,-1]}
-                wd_points[$name]=$target
+                wd__set_point $name $target
             done < $config_file
         fi
     }
 
-    function wd_save_points {
+    function wd__save_points {
         # Inspired by https://unix.stackexchange.com/a/52079/176805
+        #
+        # This assumes that neither point names nor target paths are
+        # allowed to contain newline characters.
         local combined=()
-        for key val in "${(@kv)wd_points}"; do
+        for key val in ${(kv)wd_points}; do
             combined+=(${val}$'\n'${key})
         done
-        local keys=("${${(@o)combined}#*$'\n'}")
+        local keys=(${${(o)combined}#*$'\n'})
         mkdir -p $config_dir
         if [[ -f $config-file ]]; then
             cp $config_file $config_file_backup
         fi
         for key in $keys; do
-            echo "$key|${wd_points[$key]}"
+            echo -E "$key|$(wd__point $key)"
         done > $config_file
     }
 
-    wd_load_points
+    function wd__read_point {
+        # This assumes that point names are not allowed to be empty
+        # strings.
+        local point=${1:-${PWD:t}}
+        if [[ -z $point ]]; then
+            echo "(warp point name cannot be an empty string)" 1>&2
+            return 1
+        elif [[ $point == *"|"* ]]; then
+            echo "(warp point name cannot contain pipe characters)" 1>&2
+            return 1
+        elif [[ $point == *$'\n'* ]]; then
+            echo "(warp point name cannot contain newline characters)" 1>&2
+            return 1
+        fi
+        echo -E $point
+    }
 
-    wd_points[foo]=bar
+    function wd__read_target {
+        # This assumes that target paths are not allowed to be empty
+        # strings.
+        if [[ -n $WD_NORESOLVE ]]; then
+            local target=${1:-$PWD}
+        else
+            local target=${1:-${PWD:A}}
+        fi
+        if [[ -z $target ]]; then
+            echo "(target path cannot be an empty string)" 1>&2
+            return 1
+        elif [[ $target == *$'\n'* ]]; then
+            echo "(target path cannot contain newline characters)" 1>&2
+            return 1
+        fi
+        echo -E $target
+    }
 
-    wd_save_points
+    function wd__show {
+        if [[ -v 2 ]]; then
+            if [[ -n $2 ]]; then
+                echo -E "${(q-)1} -> $2"
+            else
+                echo -E "(no warp point for '$1' defined)" 1>&2
+                return 1
+            fi
+        else
+            if wd__has_point $1; then
+                echo -E "${(q-)1} -> $(wd__point $1)"
+            else
+                echo -E "(no warp point for '$1' defined)" 1>&2
+                return 1
+            fi
+        fi
+    }
 
-}
+    function wd__usage {
+        # Avoid trailing whitespace.
+        if [[ -n $usage_messages[$1] ]]; then
+            echo "usage: wd $1 $usage_messages[$1]"
+        else
+            echo "usage: wd $1"
+        fi
+    }
+
+    function wd_go {
+        wd__load_points
+        if ! wd__has_point $1; then
+            echo -E "(no warp point for '$1' defined)" 1>&2
+            return 1
+        elif [[ ! -d "$(wd__point $1)" ]]; then
+            echo -E "(directory does not exist: '$(wd__point $1)')" 1>&2
+            return 1
+        else
+            cd "$(wd__point $1)"
+        fi
+    }
+
+    function wd_show {
+        wd__load_points
+        wd__show "$(wd__read_point $1)"
+    }
+
+    function wd_set {
+        wd__load_points
+        local point target
+        point="$(wd__read_point $1)"
+        target="$(wd__read_target $2)"
+        if wd__has_point $point && [[ "$(wd__point $point)" != $target ]]; then
+            wd__show $point
+            echo -n "Override? [y/N] "
+            # This will return from the function if the user answers
+            # no (or anything other than yes).
+            read -q
+            echo
+        fi
+        wd__set_point $point $target
+        wd__show $point
+        wd__save_points
+    }
+
+    function wd_rm {
+        wd__load_points
+        local point
+        point="$(wd__read_point $1)"
+        if wd__has_point $point; then
+            local target="$(wd__point $point)"
+            wd__remove_point $point
+            wd__show $point $target
+            wd__save_points
+        else
+            echo -E "(no warp point for '$point' defined)" 1>&2
+            return 1
+        fi
+    }
+
+    function wd_help {
+        if (( ${commands[(I)$1]} )); then
+            wd__usage $1
+        else
+            echo "usage: wd [<command>] [<arg>...]"
+            echo
+            echo "commands:"
+            for command in $commands; do
+                if [[ -n $usage_messages[$command] ]]; then
+                    echo "    $command $usage_messages[$command]"
+                else
+                    echo "    $command"
+                fi
+            done
+        fi
+    }
+
+    function wd_version {
+        local commit
+        if commit="$(cd $here && git rev-parse --short HEAD)"; then
+            if [[ -n "$(cd $here && git status --porcelain=2 2>/dev/null)" ]]; then
+                echo -E "wdx at commit $commit (dirty working directory)"
+            else
+                echo -E "wdx at commit $commit"
+            fi
+        else
+            echo "(could not determine version of wdx)" 1>&2
+            return 1
+        fi
+    }
+
+    if [[ ! -v 1 ]]; then
+        wd_help 1>&2
+        return 1
+    fi
+
+    if [[ $1 =~ "--help|-help|-h" ]]; then
+        1=help
+    fi
+
+    for command in $commands; do
+        if [[ $1 == $command ]]; then
+            shift
+            if (( $# > $arg_counts[$command] )); then
+                wd__usage $command 1>&2
+                return 1
+            else
+                wd_$command $@
+                return
+            fi
+        fi
+    done
+
+    if (( $# > $arg_counts[go] )); then
+        wd_help 1>&2
+        return 1
+    else
+        wd_go $@
+    fi
+
+} $_ $@
