@@ -8,9 +8,18 @@ function {
     # Hash of all defined warp points.
     local -A wd_points
 
-    local config_dir=${XDG_CONFIG_HOME:-~/.config}/wdx
-    local config_file=$config_dir/points
-    local config_file_backup=$config_dir/points.bak
+    if [[ -n $WD_SAVE_FILE ]]; then
+        if [[ $WD_SAVE_FILE != */* ]]; then
+            echo -E "(WD_SAVE_FILE must be an absolute path: '$WD_SAVE_FILE')" 1>&2
+            return 1
+        fi
+        local save_file=$WD_SAVE_FILE
+    else
+        local save_file=${XDG_CONFIG_HOME:-~/.config}/wdx/points
+    fi
+
+    local save_file_backup=$save_file.bak
+    local save_dir=${save_file:h}
 
     local here=$1:A:h
     shift
@@ -57,7 +66,7 @@ function {
 
     function wd__load_points {
         wd_points=()
-        if [[ -f $config_file ]]; then
+        if [[ -f $save_file ]]; then
             # read performs wordsplitting unless we disable it.
             local IFS=
             local line
@@ -68,7 +77,7 @@ function {
                 local name=${splits[1]}
                 local target=${(j:|:)splits[2,-1]}
                 wd__set_point $name $target
-            done < $config_file
+            done < $save_file
         fi
     }
 
@@ -82,13 +91,13 @@ function {
             combined+=(${val}$'\n'${key})
         done
         local keys=(${${(o)combined}#*$'\n'})
-        mkdir -p $config_dir
+        mkdir -p $save_dir
         if [[ -f $config-file ]]; then
-            cp $config_file $config_file_backup
+            cp $save_file $save_file_backup
         fi
         for key in $keys; do
             echo -E "$key|$(wd__point $key)"
-        done > $config_file
+        done > $save_file
     }
 
     function wd__read_point {
