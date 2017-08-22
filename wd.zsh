@@ -1,3 +1,0 @@
-function wd {
-    . wd
-}
