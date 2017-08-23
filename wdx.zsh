@@ -1,7 +1,9 @@
-function wdx {
+function {
+    local code='
+function WDX {
     emulate -LR zsh
     local -a output
-    output=("${(@f)$(${${functions_source[wdx]}:A:h}/wdx.py wdx $@)}") || return $?
+    output=("${(@f)$(${${functions_source[WDX]}:A:h}/wdx.py WDX $@)}") || return $?
     if [[ $output[1] == cd ]]; then
         cd $output[2]
     elif [[ $output[1] == echo ]]; then
@@ -9,7 +11,9 @@ function wdx {
             echo $line
         done
     elif [[ $output[1] != nop ]]; then
-        echo "wdx: Internal error: Unexpected protocol" 1>&2
+        echo "WDX: Internal error: Unexpected protocol" 1>&2
         return 1
     fi
+}'
+    eval ${code//WDX/${WDX_NAME:-wdx}}
 }
