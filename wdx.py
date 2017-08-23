@@ -45,7 +45,8 @@ def read_save_file(filename=None):
             text = f.read().decode('utf-8')
             lines = text.splitlines()
             if len(lines) % 2 != 0:
-                die(f'There are an odd number of lines in {filename}, aborting')
+                die(f'There are an odd number of lines '
+                    f'in {filename}, aborting')
             return dict(group(lines, 2))
     except FileNotFoundError:
         return {}
