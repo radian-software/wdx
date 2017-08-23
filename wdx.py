@@ -143,9 +143,7 @@ def command_set(*literal_args):
     if '\n' in target:
         die(f'{point}: Warp point target cannot contain newline characters')
     points = read_save_file()
-    if point in points and not force:
-        if points[point] == target:
-            die(f'{point}: Already set: {points[point]}')
+    if point in points and points[point] != target and not force:
         die(f'{point}: Already set (use -f to override): {points[point]}')
     points[point] = target
     write_save_file(points)
