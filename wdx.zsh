@@ -1,8 +1,7 @@
-wdx_directory=${${(%):-%N}:A:h}
 function wdx {
     emulate -LR zsh
     local -a output
-    output=("${(@f)$($wdx_directory/wdx.py wdx $@)}") || return $?
+    output=("${(@f)$(${${functions_source[wdx]}:A:h}/wdx.py wdx $@)}") || return $?
     if [[ $output[1] == cd ]]; then
         cd $output[2]
     elif [[ $output[1] == echo ]]; then
