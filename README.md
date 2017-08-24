@@ -1,4 +1,4 @@
-**`wdx`**: like [`wd`] but different.
+**`wdx`**: like [`wd`][wd] but different.
 
 ## Summary
 
@@ -87,7 +87,7 @@ resolved at any time, but are saved and passed to `cd` unmodified.
 
 ## Why?
 
-Because I thought the command-line interface of [`wd`] was a bit
+Because I thought the command-line interface of [`wd`][wd] was a bit
 messy, and it didn't allow for arbitrary warp point names.
 
 [wd]: https://github.com/mfaerevaag/wd
