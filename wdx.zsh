@@ -1,4 +1,5 @@
 function {
+    emulate -LR zsh
     local code='
 function WDX {
     emulate -LR zsh
