@@ -15,5 +15,5 @@ The format is based on [Keep a Changelog].
 * Subcommands `go`, `show`, `set`, `rm`, `version`, `help`.
 * MIT license and documentation.
 
-[keep a changelog]: [Keep a Changelog]: http://keepachangelog.com/
+[keep a changelog]: http://keepachangelog.com/
 [zplug]: https://github.com/zplug/zplug
