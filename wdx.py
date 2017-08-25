@@ -162,7 +162,7 @@ def command_rm(point=None):
 
 def command_version():
     print('echo')
-    print('wdx 1.0-devel')
+    print('wdx 1.0')
 
 def command_help(command=None):
     if command in COMMANDS:
