@@ -19,7 +19,7 @@ def print_stderr(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def atomic_write(filename, contents):
-    os.makedirs(os.path.split(filename)[0])
+    os.makedirs(os.path.split(filename)[0], exist_ok=True)
     temp_filename = filename + '.tmp'
     with open(temp_filename, 'wb') as f:
         f.write(contents.encode('utf-8'))
