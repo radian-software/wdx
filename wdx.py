@@ -61,6 +61,7 @@ def write_save_file(points, filename=None):
     for point, path in entries:
         lines.append(point)
         lines.append(path)
+    os.makedirs(os.path.split(filename)[0])
     atomic_write(filename, os.linesep.join(lines) + os.linesep)
 
 COMMANDS = collections.OrderedDict([
