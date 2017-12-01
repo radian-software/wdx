@@ -19,10 +19,11 @@ def print_stderr(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def atomic_write(filename, contents):
-    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+    temp_filename = filename + '.tmp'
+    with open(temp_filename, 'wb') as f:
         f.write(contents.encode('utf-8'))
-        temp_filename = f.name
     os.rename(temp_filename, filename)
+    os.unlink(temp_filename)
 
 def die(message):
     die_raw(f'{WDX}: {message}')
