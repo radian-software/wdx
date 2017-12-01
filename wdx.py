@@ -24,7 +24,6 @@ def atomic_write(filename, contents):
     with open(temp_filename, 'wb') as f:
         f.write(contents.encode('utf-8'))
     os.rename(temp_filename, filename)
-    os.unlink(temp_filename)
 
 def die(message):
     die_raw(f'{WDX}: {message}')
