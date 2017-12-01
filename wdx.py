@@ -19,6 +19,7 @@ def print_stderr(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def atomic_write(filename, contents):
+    os.makedirs(os.path.split(filename)[0])
     temp_filename = filename + '.tmp'
     with open(temp_filename, 'wb') as f:
         f.write(contents.encode('utf-8'))
@@ -61,7 +62,6 @@ def write_save_file(points, filename=None):
     for point, path in entries:
         lines.append(point)
         lines.append(path)
-    os.makedirs(os.path.split(filename)[0])
     atomic_write(filename, os.linesep.join(lines) + os.linesep)
 
 COMMANDS = collections.OrderedDict([
