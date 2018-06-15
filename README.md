@@ -2,73 +2,68 @@
 
 ## Summary
 
-`wdx` allows you to designate directories with abbreviations, and
-later use those abbreviations to jump to the directories.
+`wdx` is a Zsh plugin which allows you to designate directories with
+abbreviations, and later use those abbreviations to jump to the
+directories.
 
 ## Installing
 
-I recommend using [zplug]:
+The easiest way to install `wdx` is using [zplug]:
 
     $ zplug raxod502/wdx
 
-Else you can clone this repository and source `wdx.zsh` in your
-`.zshrc`. There is only support for Zsh at the moment, but that is
-easy to change.
+Otherwise, you can install `wdx` manually:
 
-If you export `WDX_NAME` before sourcing `wdx.zsh`, then the function
-is defined with that name, rather than `wdx`. Example:
+* Clone the `wdx` source repository.
+* Add the `bin` subdirectory to your PATH.
+* Source the file `wdx.zsh` in your `~/.zshrc`.
 
-    $ export WDX_NAME=wd
+## Basic usage
 
-`wdx` doesn't need `WDX_NAME` to be defined after you've sourced
-`wdx.zsh`.
+Here is the command syntax:
 
-## Usage
+    usage: wdx [-s | --shell] <subcommand>
 
-Set a warp point to the current directory, using the basename of the
-directory as the point name:
+    subcommands:
+      wdx [go] <point>
+      wdx show <point>
+      wdx set [<point> [<target>]] [-f | --force]
+      wdx rm [<point>]
+      wdx help [<subcommand>]
+      wdx version
 
-    $ wdx set
+The subcommands are as follows:
 
-Use an alternative point name:
+* The `go` subcommand is used to `cd` to a target directory. If you
+  don't give any subcommand, then `wdx` assumes you meant `go`.
+* The `show` subcommand is used to print a target directory.
+* The `set` subcommand is used to set a warp point. The `-f` or
+  `--force` option allows you to overwrite an existing warp point by
+  the same name.
+* The `rm` subcommand is used to remove a warp point.
 
-    $ wdx set <name>
+Ambiguities are resolved like so:
 
-Set a warp point to a particular directory:
+* If the warp point name is omitted in the `set` or `rm` subcommands,
+  then it defaults to the basename of the current directory
+  (`/foo/bar` becomes `bar`).
+* If the target directory is omitted in the `set` subcommand, then it
+  defaults to the current directory.
+* You must use `wdx go` explicitly in order to go to a warp point
+  whose name is also a `wdx` subcommand.
+* To deal with warp points and directories whose names begin with a
+  hyphen, you can use the `--` argument to prevent following arguments
+  from being interpreted as options.
 
-    $ wdx set <name> <target-directory>
+The `-s`, `--shell` option causes `wdx` to print shell code to stdout
+instead of performing the action directly. This feature is used
+implicitly by the shell wrapper defined in `wdx.zsh`, so that the `go`
+subcommand can actually change the working directory of your shell. It
+is probably not much use to the end user, unless you are bypassing the
+shell wrapper and working directly with the `wdx` script in the `bin`
+subdirectory.
 
-The command will abort if the warp point already exists and it points
-to a different directory. Override that:
-
-    $ wdx set -f
-
-If `-f` is present, it's assumed to be a flag. `-f` may be repeated,
-with no special effect. To override this, everything after a `--` is
-taken literally.
-
-Jump to a warp point:
-
-    $ wdx go <point>
-
-Shorthand, if the point name is not also a `wdx` subcommand:
-
-    $ wdx <point>
-
-Show the target of a warp point:
-
-    $ wdx show <point>
-
-Delete a warp point (defaults to basename of current directory):
-
-    $ wdx rm [<point>]
-
-Misc:
-
-    $ wdx help [<subcommand>]
-    $ wdx version
-
-## Protips
+## Save file format
 
 Your warp points are put in `$XDG_CONFIG_HOME/wdx/points`, or by
 default `~/.config/wdx/points`.
@@ -84,6 +79,14 @@ directory, which will otherwise break your warp points.
 
 Note that warp point targets need not be absolute paths. They are not
 resolved at any time, but are saved and passed to `cd` unmodified.
+
+## Tips
+
+You can use `wdx` with the name `wd` insert, simply by defining
+
+    alias wd=wdx
+
+in your `.zshrc`.
 
 ## Why?
 

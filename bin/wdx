@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+
+import os
+import shlex
+import sys
+
+def group(iterable, group_size):
+    # Devilish hack. See [1].
+    #
+    # [1]: https://stackoverflow.com/a/1625023/3538165
+    return zip(*((iter(iterable),) * group_size))
+
+def atomic_write(filename, contents):
+    os.makedirs(os.path.split(filename)[0], exist_ok=True)
+    temp_filename = filename + ".tmp"
+    with open(temp_filename, "wb") as f:
+        f.write(contents.encode("utf-8"))
+    os.rename(temp_filename, filename)
+
+def get_save_file_name():
+    if "XDG_CONFIG_HOME" in os.environ:
+        home = os.environ["XDG_CONFIG_HOME"]
+        if os.path.exists(home):
+            return os.path.join(home, "wdx", "points")
+    return os.path.expanduser(os.path.join("~", ".config", "wdx", "points"))
+
+def read_save_file(filename=None):
+    if filename is None:
+        filename = get_save_file_name()
+    try:
+        with open(filename, "rb") as f:
+            text = f.read().decode("utf-8")
+            lines = text.splitlines()
+            if len(lines) % 2 != 0:
+                die("malformed save file (odd number of lines): " + filename)
+            return dict(group(lines, 2))
+    except FileNotFoundError:
+        return {}
+
+def write_save_file(points, filename=None):
+    if filename is None:
+        filename = get_save_file_name()
+    # Sort first by paths and then by point names.
+    entries = sorted(points.items(), key=lambda item: (item[1], item[0]))
+    lines = []
+    for point, path in entries:
+        lines.append(point)
+        lines.append(path)
+    atomic_write(filename, os.linesep.join(lines) + os.linesep)
+
+def get_default_point():
+    point = os.path.basename(os.getcwd())
+    if "\n" in point:
+        die("warp point name cannot contain newline characters: " + point)
+    return point
+
+def get_default_target():
+    path = os.getcwd()
+    if "\n" in path:
+        die("warp point target cannot contain newline characters: " + path)
+    return path
+
+def usage():
+    return """\
+usage: wdx [-s | --shell] <subcommand>
+
+subcommands:
+  wdx [go] <point>
+  wdx show <point>
+  wdx set [<point> [<target>]] [-f | --force]
+  wdx rm [<point>]
+  wdx help [<subcommand>]
+  wdx version
+
+The -s, --shell option causes shell code to be printed to stdout. (But
+if wdx has been correctly installed, then this option is already being
+used, in order to let wdx change the working directory of your shell.)\
+"""
+
+def subcommand_usage(subcommand):
+    if subcommand == "go":
+        return "usage: wdx [go] <point>"
+    if subcommand == "show":
+        return "usage: wdx show <point>"
+    if subcommand == "set":
+        return "usage: wdx set [<point> [<target>]] [-f | --force]"
+    if subcommand == "rm":
+        return "usage: wdx rm [<point>]"
+    if subcommand == "help":
+        return "usage: wdx help [<subcommand>]"
+    if subcommand == "version":
+        return "usage: wdx version"
+    assert False
+
+def description():
+    return """\
+wdx is a command-line utility and shell function which allows you to designate
+directories with abbreviations, and later use those abbreviations to jump to
+the directories.
+
+Find out more at https://github.com/raxod502/wdx.\
+"""
+
+def subcommand_description(subcommand):
+    if subcommand == "go":
+        return """\
+The 'go' subcommand allows you to cd to the given warp point. If you do not
+provide a subcommand, wdx assumes you meant 'go'.\
+"""
+    if subcommand == "show":
+        return """\
+The 'show' subcommand prints the target of the given warp point to stdout.\
+"""
+    if subcommand == "set":
+        return """\
+The 'set' subcommand creates a new warp point. The point name defaults to the
+basename of the current directory, and the target directory defaults to the
+current directory. The -f, --force option allows you to overwrite an existing
+warp point with a new target directory.\
+"""
+    if subcommand == "rm":
+        return """\
+The 'rm' subcommand deletes the given warp point (defaults to the basename of
+the current directory).\
+"""
+    if subcommand == "help":
+        return """\
+The 'help' subcommand gives you information about how to use wdx or one of its
+subcommands.\
+"""
+    if subcommand == "version":
+        return """\
+The 'version' subcommand gives you the current version of wdx.\
+"""
+    assert False
+
+def get_help():
+    return "{}\n\n{}".format(description(), usage())
+
+def get_subcommand_help(subcommand):
+    if subcommand not in ("go", "show", "set", "rm", "help", "version"):
+        die("no such subcommand: " + subcommand)
+    return "{}\n\n{}".format(
+        subcommand_description(subcommand), subcommand_usage(subcommand))
+
+def die_with_usage():
+    print(usage(), file=sys.stderr)
+    sys.exit(1)
+
+def die_with_subcommand_usage(subcommand):
+    print(subcommand_usage(subcommand), file=sys.stderr)
+    sys.exit(1)
+
+def die(message):
+    print("wdx: " + message, file=sys.stderr)
+    sys.exit(1)
+
+HELP_OPTIONS = ("-h", "-?", "-help", "--help")
+VERSION_OPTIONS = ("-v", "-V", "-version", "--version")
+
+def main(args):
+    orig_args = args
+    args = []
+    options = []
+    literal = False
+    for arg in orig_args:
+        if literal or not arg.startswith("-"):
+            args.append(arg)
+        elif arg == "--":
+            literal = True
+        else:
+            options.append(arg)
+    shell = False
+    show_help = False
+    show_version = False
+    orig_options = options
+    options = []
+    for option in orig_options:
+        if option == "-s" or option == "--shell":
+            shell = True
+            continue
+        if option in HELP_OPTIONS:
+            show_help = True
+            continue
+        if option in VERSION_OPTIONS:
+            show_version = True
+            continue
+        options.append(option)
+    if show_help:
+        args.insert(0, "help")
+    elif show_version:
+        args = ["version"]
+    if not args:
+        die_with_usage()
+    subcommand, *args = args
+    if subcommand == "show":
+        if len(args) != 1 or options:
+            die_with_subcommand_usage("show")
+        point = args[0]
+        points = read_save_file()
+        if point not in points:
+            die("no such warp point: " + point)
+        target = points[point]
+        if shell:
+            print("echo " + shlex.quote(target))
+        else:
+            print(target)
+        sys.exit(0)
+    if subcommand == "set":
+        force = False
+        for option in options:
+            if option == "-f" or option == "--force":
+                force = True
+                continue
+            die_with_subcommand_usage("set")
+        if len(args) == 0:
+            point = get_default_point()
+            target = get_default_target()
+        elif len(args) == 1:
+            point = args[0]
+            target = get_default_target()
+        elif len(args) == 2:
+            point, target = args
+        else:
+            die_with_subcommand_usage("set")
+        if "\n" in point:
+            die("warp point name cannot contain newline characters: " + point)
+        if "\n" in target:
+            die("warp point target cannot contain newline characters: {}"
+                .format(target))
+        points = read_save_file()
+        if point in points and points[point] != target and not force:
+            die("warp point {} is already set: {}"
+                .format(repr(point), points[point]))
+        points[point] = target
+        write_save_file(points)
+        sys.exit(0)
+    if subcommand == "rm":
+        if len(args) > 1 or options:
+            die_with_subcommand_usage("rm")
+        if args:
+            point = args[0]
+        else:
+            point = get_default_point()
+        points = read_save_file()
+        if point not in points:
+            die("no such warp point: " + point)
+        del points[point]
+        write_save_file(points)
+        sys.exit(0)
+    if subcommand == "help":
+        if len(args) > 1 or options:
+            die_with_subcommand_usage("help")
+        if args:
+            message = get_subcommand_help(args[0])
+        else:
+            message = get_help()
+        if shell:
+            print("echo " + shlex.quote(message))
+        else:
+            print(message)
+        sys.exit(0)
+    if subcommand == "version":
+        if args or options:
+            die_with_subcommand_usage("version")
+        message = "wdx 1.0-devel"
+        if shell:
+            print("echo " + shlex.quote(message))
+        else:
+            print(message)
+        sys.exit(0)
+    explicit = False
+    if subcommand == "go":
+        if len(args) != 1:
+            die_with_subcommand_usage("go")
+        point = args[0]
+        explicit = True
+    elif args:
+        die_with_usage()
+    else:
+        point = subcommand
+    points = read_save_file()
+    if point not in points:
+        if explicit:
+            die("no such warp point: " + point)
+        else:
+            die("no such warp point or subcommand: " + point)
+    if not shell:
+        print("wdx: cannot use 'go' subcommand without -s, --shell option",
+              file=sys.stderr)
+        print("hint: do you need to source wdx.zsh first?", file=sys.stderr)
+        sys.exit(1)
+    print("cd " + shlex.quote(points[point]))
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
