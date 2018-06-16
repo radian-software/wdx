@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog].
   `--`, `--help`, and `--version` options (and similar) are accepted
   globally.
 
+### New features
+* Added a `wdx ls` command for listing warp points. This should be
+  especially useful in scripts.
+
 ### Enhancements
 * The command-line help is now much more sophisticated, and includes
   explanations of each subcommand as well as `wdx` as a whole.

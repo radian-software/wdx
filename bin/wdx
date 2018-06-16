@@ -69,6 +69,7 @@ subcommands:
   wdx show <point>
   wdx set [<point> [<target>]] [-f | --force]
   wdx rm [<point>]
+  wdx ls
   wdx help [<subcommand>]
   wdx version\
 """
@@ -82,6 +83,8 @@ def subcommand_usage(subcommand):
         return "usage: wdx set [<point> [<target>]] [-f | --force]"
     if subcommand == "rm":
         return "usage: wdx rm [<point>]"
+    if subcommand == "ls":
+        return "usage: wdx ls"
     if subcommand == "help":
         return "usage: wdx help [<subcommand>]"
     if subcommand == "version":
@@ -126,6 +129,11 @@ warp point with a new target directory.\
 The 'rm' subcommand deletes the given warp point (defaults to the basename of
 the current directory).\
 """
+    if subcommand == "ls":
+        return """\
+The 'ls' command prints a list of all the warp point names, in alphabetical
+order, to stdout.\
+"""
     if subcommand == "help":
         return """\
 The 'help' subcommand gives you information about how to use wdx or one of its
@@ -142,7 +150,7 @@ def get_help():
         description(), usage(), description_additional())
 
 def get_subcommand_help(subcommand):
-    if subcommand not in ("go", "show", "set", "rm", "help", "version"):
+    if subcommand not in ("go", "show", "set", "rm", "ls", "help", "version"):
         die("no such subcommand: " + subcommand)
     return "{}\n\n{}".format(
         subcommand_description(subcommand), subcommand_usage(subcommand))
@@ -251,6 +259,16 @@ def main(args):
             die("no such warp point: " + point)
         del points[point]
         write_save_file(points)
+        sys.exit(0)
+    if subcommand == "ls":
+        if args or options:
+            die_with_subcommand_usage("ls")
+        points = read_save_file()
+        output = "\n".join(sorted(points.keys()))
+        if shell:
+            print("echo " + shlex.quote(output))
+        else:
+            print(output)
         sys.exit(0)
     if subcommand == "help":
         if len(args) > 1 or options:

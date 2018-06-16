@@ -29,6 +29,7 @@ Here is the command syntax:
       wdx show <point>
       wdx set [<point> [<target>]] [-f | --force]
       wdx rm [<point>]
+      wdx ls
       wdx help [<subcommand>]
       wdx version
 
@@ -41,6 +42,9 @@ The subcommands are as follows:
   `--force` option allows you to overwrite an existing warp point by
   the same name.
 * The `rm` subcommand is used to remove a warp point.
+* The `ls` subcommand is used to print a list of all the defined warp
+  point names. If you want to see the paths as well, you can just
+  inspect the save file (see below).
 
 Ambiguities are resolved like so:
 
