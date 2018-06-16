@@ -70,11 +70,7 @@ subcommands:
   wdx set [<point> [<target>]] [-f | --force]
   wdx rm [<point>]
   wdx help [<subcommand>]
-  wdx version
-
-The -s, --shell option causes shell code to be printed to stdout. (But
-if wdx has been correctly installed, then this option is already being
-used, in order to let wdx change the working directory of your shell.)\
+  wdx version\
 """
 
 def subcommand_usage(subcommand):
@@ -99,6 +95,13 @@ directories with abbreviations, and later use those abbreviations to jump to
 the directories.
 
 Find out more at https://github.com/raxod502/wdx.\
+"""
+
+def description_additional():
+    return """\
+The -s, --shell option causes shell code to be printed to stdout. (But
+if wdx has been correctly installed, then this option is already being
+used, in order to let wdx change the working directory of your shell.)\
 """
 
 def subcommand_description(subcommand):
@@ -135,7 +138,8 @@ The 'version' subcommand gives you the current version of wdx.\
     assert False
 
 def get_help():
-    return "{}\n\n{}".format(description(), usage())
+    return "{}\n\n{}\n\n{}".format(
+        description(), usage(), description_additional())
 
 def get_subcommand_help(subcommand):
     if subcommand not in ("go", "show", "set", "rm", "help", "version"):
