@@ -82,7 +82,7 @@ resolved at any time, but are saved and passed to `cd` unmodified.
 
 ## Tips
 
-You can use `wdx` with the name `wd` insert, simply by defining
+You can use `wdx` with the name `wd` instead, simply by defining
 
     alias wd=wdx
 
