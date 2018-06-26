@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
-## Unreleased
+## 2.0 (released 2018-06-26)
 ### Breaking changes
 * The `WDX_NAME` environment variable no longer affects the operation
   of `wdx.zsh`. If you wish to use `wdx` by another name, define an
