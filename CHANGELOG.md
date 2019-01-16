@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Bugs fixed
+* If `~/.config/wdx/points` was a symlink, `wdx` previously replaced
+  it with a regular file when writing it. This behavior has been
+  fixed.
+
 ## 2.0 (released 2018-06-26)
 ### Breaking changes
 * The `WDX_NAME` environment variable no longer affects the operation

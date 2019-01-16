@@ -11,6 +11,7 @@ def group(iterable, group_size):
     return zip(*((iter(iterable),) * group_size))
 
 def atomic_write(filename, contents):
+    filename = os.path.realpath(filename)
     os.makedirs(os.path.split(filename)[0], exist_ok=True)
     temp_filename = filename + ".tmp"
     with open(temp_filename, "wb") as f:
