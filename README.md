@@ -8,9 +8,9 @@ directories.
 
 ## Installing
 
-The easiest way to install `wdx` is using [zplug]:
+The easiest way to install `wdx` is using [zplugin]:
 
-    $ zplug raxod502/wdx
+    $ zplugin light raxod502/wdx
 
 Otherwise, you can install `wdx` manually:
 
@@ -98,4 +98,4 @@ Because I thought the command-line interface of [`wd`][wd] was a bit
 messy, and it didn't allow for arbitrary warp point names.
 
 [wd]: https://github.com/mfaerevaag/wd
-[zplug]: https://github.com/zplug/zplug
+[zplugin]: https://github.com/zdharma/zplugin
