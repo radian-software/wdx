@@ -1,0 +1,23 @@
+#compdef wdx
+
+local line
+local -a commands points
+
+commands=(go show set rm ls help version)
+points=(${(f)"$(wdx ls)"})
+
+_arguments -C "1: :(${commands[*]} ${points[*]})" "*::arg:->args"
+
+case ${line[1]} in
+    go|show|rm)
+        _arguments "1: :(${points[*]})" ;;
+    set)
+        _arguments "-f" "--force" "1: :()" "2: :_files" ;;
+    help)
+        _arguments "1: :(${commands[*]})" ;;
+esac
+
+# Local Variables:
+# mode: shell-script
+# sh-shell: zsh
+# End:

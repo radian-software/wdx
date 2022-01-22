@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Enhancements
+* Zsh completions are now available.
+
 ## 2.0.1 (released 2019-02-12)
 ### Bugs fixed
 * If `~/.config/wdx/points` was a symlink, `wdx` previously replaced
