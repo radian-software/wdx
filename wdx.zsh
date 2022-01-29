@@ -14,4 +14,6 @@ function {
         output="$(command wdx --shell "$@")" || return $?
         eval "$output"
     }
+
+    fpath+=${0:A:h}/completions
 }

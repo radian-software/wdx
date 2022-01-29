@@ -1,1 +1,1 @@
-fpath+="${0:A:h}/completions"
+wdx.zsh
