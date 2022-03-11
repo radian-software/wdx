@@ -4,11 +4,13 @@ import os
 import shlex
 import sys
 
+
 def group(iterable, group_size):
     # Devilish hack. See [1].
     #
     # [1]: https://stackoverflow.com/a/1625023/3538165
     return zip(*((iter(iterable),) * group_size))
+
 
 def atomic_write(filename, contents):
     filename = os.path.realpath(filename)
@@ -18,12 +20,14 @@ def atomic_write(filename, contents):
         f.write(contents.encode("utf-8"))
     os.rename(temp_filename, filename)
 
+
 def get_save_file_name():
     if "XDG_CONFIG_HOME" in os.environ:
         home = os.environ["XDG_CONFIG_HOME"]
         if os.path.exists(home):
             return os.path.join(home, "wdx", "points")
     return os.path.expanduser(os.path.join("~", ".config", "wdx", "points"))
+
 
 def read_save_file(filename=None):
     if filename is None:
@@ -38,6 +42,7 @@ def read_save_file(filename=None):
     except FileNotFoundError:
         return {}
 
+
 def write_save_file(points, filename=None):
     if filename is None:
         filename = get_save_file_name()
@@ -49,17 +54,20 @@ def write_save_file(points, filename=None):
         lines.append(path)
     atomic_write(filename, os.linesep.join(lines) + os.linesep)
 
+
 def get_default_point():
     point = os.path.basename(os.getcwd())
     if "\n" in point:
         die("warp point name cannot contain newline characters: " + point)
     return point
 
+
 def get_default_target():
     path = os.getcwd()
     if "\n" in path:
         die("warp point target cannot contain newline characters: " + path)
     return path
+
 
 def usage():
     return """\
@@ -74,6 +82,7 @@ subcommands:
   wdx help [<subcommand>]
   wdx version\
 """
+
 
 def subcommand_usage(subcommand):
     if subcommand == "go":
@@ -92,6 +101,7 @@ def subcommand_usage(subcommand):
         return "usage: wdx version"
     assert False
 
+
 def description():
     return """\
 wdx is a command-line utility and shell function which allows you to designate
@@ -101,12 +111,14 @@ the directories.
 Find out more at https://github.com/raxod502/wdx.\
 """
 
+
 def description_additional():
     return """\
 The -s, --shell option causes shell code to be printed to stdout. (But
 if wdx has been correctly installed, then this option is already being
 used, in order to let wdx change the working directory of your shell.)\
 """
+
 
 def subcommand_description(subcommand):
     if subcommand == "go":
@@ -146,30 +158,37 @@ The 'version' subcommand gives you the current version of wdx.\
 """
     assert False
 
+
 def get_help():
-    return "{}\n\n{}\n\n{}".format(
-        description(), usage(), description_additional())
+    return "{}\n\n{}\n\n{}".format(description(), usage(), description_additional())
+
 
 def get_subcommand_help(subcommand):
     if subcommand not in ("go", "show", "set", "rm", "ls", "help", "version"):
         die("no such subcommand: " + subcommand)
     return "{}\n\n{}".format(
-        subcommand_description(subcommand), subcommand_usage(subcommand))
+        subcommand_description(subcommand), subcommand_usage(subcommand)
+    )
+
 
 def die_with_usage():
     print(usage(), file=sys.stderr)
     sys.exit(1)
 
+
 def die_with_subcommand_usage(subcommand):
     print(subcommand_usage(subcommand), file=sys.stderr)
     sys.exit(1)
+
 
 def die(message):
     print("wdx: " + message, file=sys.stderr)
     sys.exit(1)
 
+
 HELP_OPTIONS = ("-h", "-?", "-help", "--help")
 VERSION_OPTIONS = ("-v", "-V", "-version", "--version")
+
 
 def main(args):
     orig_args = args
@@ -239,12 +258,12 @@ def main(args):
         if "\n" in point:
             die("warp point name cannot contain newline characters: " + point)
         if "\n" in target:
-            die("warp point target cannot contain newline characters: {}"
-                .format(target))
+            die(
+                "warp point target cannot contain newline characters: {}".format(target)
+            )
         points = read_save_file()
         if point in points and points[point] != target and not force:
-            die("warp point {} is already set: {}"
-                .format(repr(point), points[point]))
+            die("warp point {} is already set: {}".format(repr(point), points[point]))
         points[point] = target
         write_save_file(points)
         sys.exit(0)
@@ -309,12 +328,15 @@ def main(args):
         else:
             die("no such warp point or subcommand: " + point)
     if not shell:
-        print("wdx: cannot use 'go' subcommand without -s, --shell option",
-              file=sys.stderr)
+        print(
+            "wdx: cannot use 'go' subcommand without -s, --shell option",
+            file=sys.stderr,
+        )
         print("hint: do you need to source wdx.zsh first?", file=sys.stderr)
         sys.exit(1)
     print("cd " + shlex.quote(points[point]))
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
