@@ -286,7 +286,7 @@ def main(args):
     if subcommand == "version":
         if args or options:
             die_with_subcommand_usage("version")
-        message = "wdx 2.0.1-devel"
+        message = "wdx 2.1.0"
         if shell:
             print("echo " + shlex.quote(message))
         else:
