@@ -108,7 +108,7 @@ wdx is a command-line utility and shell function which allows you to designate
 directories with abbreviations, and later use those abbreviations to jump to
 the directories.
 
-Find out more at https://github.com/raxod502/wdx.\
+Find out more at https://github.com/radian-software/wdx.\
 """
 
 
