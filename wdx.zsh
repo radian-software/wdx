@@ -9,7 +9,7 @@ function {
     fi
 
     function wdx {
-        emulate -LR zsh
+        emulate -L zsh
         local output
         output="$(command wdx --shell "$@")" || return $?
         eval "$output"

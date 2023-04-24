@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## Unreleased
+### Bugs fixed
+* The autopushd setting is now respected if set in your Zsh
+  configuration ([#5]).
+
+[#5]: https://github.com/radian-software/wdx/issues/5
+
 ## 2.1.0 (released 2022-03-10)
 ### Enhancements
 * Zsh completions are now available.
