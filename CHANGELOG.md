@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
-## Unreleased
+## 2.1.1 (released 2023-09-30)
 ### Bugs fixed
 * The autopushd setting is now respected if set in your Zsh
   configuration ([#5]).
