@@ -8,15 +8,15 @@ directories.
 
 ## Installing
 
-The easiest way to install `wdx` is using [zinit]:
+The easiest way to install `wdx` is using [Znap]:
 
-    $ zplugin light radian-software/wdx
+    $ znap source radian-software/wdx
 
 Otherwise, you can install `wdx` manually:
 
 * Clone the `wdx` source repository.
-* Add the `bin` subdirectory to your PATH.
 * Source the file `wdx.zsh` in your `~/.zshrc`.
+    * This will add the relevant directories to `$PATH` and `$fpath`.
 
 ## Basic usage
 
@@ -98,4 +98,4 @@ Because I thought the command-line interface of [`wd`][wd] was a bit
 messy, and it didn't allow for arbitrary warp point names.
 
 [wd]: https://github.com/mfaerevaag/wd
-[zinit]: https://github.com/zdharma-continuum/zinit
+[znap]: https://github.com/marlonrichert/zsh-snap
