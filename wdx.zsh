@@ -15,5 +15,5 @@ function {
         eval "$output"
     }
 
-    fpath+=${0:A:h}/completions
+    fpath+=${wdx_dir}/completions
 }
