@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## 2.1.2 (released 2026-02-21)
+### Bugs fixed
+* Zsh completions work properly now. They were broken since initial
+  release.
+
 ## 2.1.1 (released 2023-09-30)
 ### Bugs fixed
 * The autopushd setting is now respected if set in your Zsh
