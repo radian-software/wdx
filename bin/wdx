@@ -284,6 +284,8 @@ def main(args):
         if args or options:
             die_with_subcommand_usage("ls")
         points = read_save_file()
+        if not points:
+            sys.exit(0)
         output = "\n".join(sorted(points.keys()))
         if shell:
             print("echo " + shlex.quote(output))
