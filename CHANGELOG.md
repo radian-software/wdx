@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog].
 
+## 2.1.3 (released 2026-05-25)
+### Bugs fixed
+* An extra newline will no longer be printed when using `wdx ls` with
+  no points registered. This was broken since initial release.
+
 ## 2.1.2 (released 2026-02-21)
 ### Bugs fixed
 * Zsh completions work properly now. They were broken since initial
